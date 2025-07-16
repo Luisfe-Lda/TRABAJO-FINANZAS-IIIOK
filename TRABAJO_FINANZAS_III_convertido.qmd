@@ -1,0 +1,997 @@
+---
+title: "Conversión Colab a R Quarto"
+format: html
+editor: visual
+---
+
+#TRABAJO FINANZAS III
+
+##Integrantes:
+
+*   Meboly Vega
+*   Vicente Roman
+*   Luis Gaete
+*   Felipe Villena
+
+Importar Librerías
+
+```{r}
+# --- Código original en Python ---
+# Manipulación de datos
+import numpy as np
+import pandas as pd
+
+# Visualización
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Funciones matemáticas y estadísticas
+import math
+from scipy.stats import norm
+
+# Para obtener precios de acciones reales (opcional)
+# !pip install yfinance
+# import yfinance as yf
+
+# Estilo de gráficos
+plt.style.use("seaborn-v0_8-darkgrid")
+sns.set_palette("Set2")
+
+#Fechas en el tiempo
+from datetime import datetime, timedelta
+```
+
+#ACCIONES
+
+###La **empresa A** pagará para los proximos 3 años dividendos de **"20, 10 y 60"**. **A contar del tercer año**, la empresa afirma que los dividendos que pagará **crecerán un 8% anual en forma indefinida**. A su vez la **empresa B** paga un **dividendo de 10**, el cuál **crecerá con el tiempo a un 12%.**
+##Considere una **tasa de mercado de 15%.**
+##¿Cuál es el valor actual del precio de la acción de cada empresa?
+
+![image.png](data:image/png;base64,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)
+
+```{r}
+# --- Código original en Python ---
+# DATOS EMPRESA A
+r = 0.15  # tasa de descuento
+# Dividendos años 1, 2, 3
+D1_A = 20
+D2_A = 10
+D3_A = 60
+g_A = 0.08  # g = crecimiento perpetuo desde año 4
+
+# Valor presente de dividendos explícitos
+vp_dividendos_A = D1_A / (1 + r)**1 + D2_A / (1 + r)**2 + D3_A / (1 + r)**3
+
+# Dividendo del año 4
+D4_A = D3_A * (1 + g_A)
+
+# Valor perpetuo a partir del año 3 (traído a año 0)
+P3_A = D4_A / (r - g_A)
+vp_terminal_A = P3_A / (1 + r)**3
+
+# Precio total acción A
+precio_A = vp_dividendos_A + vp_terminal_A
+
+# ===== RESULTADOS =====
+print("VALORACIÓN DE ACCIONES EMPRESA A\n")
+
+print("EMPRESA A (dividendos mixtos + crecimiento):")
+print(f"- Valor presente de dividendos (años 1–3): ${vp_dividendos_A:.2f}")
+print(f"- Valor presente de perpetuidad desde año 4: ${vp_terminal_A:.2f}")
+print(f"- Precio estimado de la acción A: ${precio_A:.2f}")
+```
+
+![image.png](data:image/png;base64,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)
+
+```{r}
+# --- Código original en Python ---
+# DATOS EMPRESA B
+r = 0.15  # tasa de descuento
+
+D0_B = 10     # dividendo actual
+g_B = 0.12    #  g = crecimiento constante
+
+# Dividendo año 1
+D1_B = D0_B * (1 + g_B)
+
+# Precio actual con crecimiento constante
+precio_B = D1_B / (r - g_B)
+
+# ===== RESULTADOS =====
+print("VALORACIÓN DE ACCIONES EMPRESA B\n")
+
+print("\n EMPRESA B (crecimiento constante):")
+print(f"- Dividendo esperado año 1: ${D1_B:.2f}")
+print(f"- Precio estimado de la acción B: ${precio_B:.2f}")
+```
+
+GRAFICOS DE LAS VALORIZACIONES DE AMBAS EMPRESAS A & B
+
+```{r}
+# --- Código original en Python ---
+# Crear un DataFrame para graficar los precios
+data = {'Empresa': ['A', 'B'],
+        'Precio Estimado': [precio_A, precio_B]}
+df_precios = pd.DataFrame(data)
+
+# Graficar los precios estimados
+plt.figure(figsize=(8, 6))
+sns.barplot(x='Empresa', y='Precio Estimado', data=df_precios)
+plt.title('Valorización Estimada de Acciones (Empresa A vs. Empresa B)')
+plt.ylabel('Precio Estimado de la Acción ($)')
+plt.show()
+
+# Para graficar el flujo de dividendos de la empresa A para visualizar
+anios_A = np.arange(1, 7) # Años 1 a 6 para visualizar el inicio del crecimiento
+dividendos_A_plot = [D1_A, D2_A, D3_A] + [D3_A * (1 + g_A)**(n-3) for n in anios_A[3:]]
+
+plt.figure(figsize=(10, 6))
+plt.bar(anios_A, dividendos_A_plot, color='skyblue')
+plt.axhline(0, color='gray', linewidth=0.8)
+plt.title('Flujo de Dividendos de la Empresa A a lo largo del tiempo')
+plt.xlabel('Año')
+plt.ylabel('Dividendo ($)')
+plt.xticks(anios_A)
+plt.grid(axis='y')
+plt.show()
+
+# Para graficar el crecimiento de los dividendos de la empresa B
+anios_B = np.arange(0, 6) # Desde el dividendo actual (año 0) hasta el año 5
+dividendos_B_plot = [D0_B * (1 + g_B)**n for n in anios_B]
+
+plt.figure(figsize=(10, 6))
+plt.plot(anios_B, dividendos_B_plot, marker='o', linestyle='-', color='orange')
+plt.axhline(0, color='black', linewidth=0.8)
+plt.title('Crecimiento de Dividendos de la Empresa B')
+plt.xlabel('Año')
+plt.ylabel('Dividendo ($)')
+plt.xticks(anios_B)
+plt.grid(True)
+plt.show()
+```
+
+#BONOS
+
+###Un bono con un valor nominal de 1000 pesos chilenos, paga cupones anuales de 10% durante 10 años. La tasa requerida por el mercado es de 10%. ¿Cuál es el valor actual del bono?
+
+```{r}
+# --- Código original en Python ---
+# Parámetros del bono
+valor_nominal = 1000       # Valor facial
+tasa_cupon = 0.10          # 10% anual
+plazo = 10                 # 10 años
+tasa_descuento = 0.10      # 10% anual
+
+# Flujo de cupones
+cupon_anual = valor_nominal * tasa_cupon
+
+# Calcular el valor presente de cada flujo
+valores_presentes = []
+for t in range(1, plazo + 1):
+    vp_cupon = cupon_anual / (1 + tasa_descuento)**t
+    valores_presentes.append(vp_cupon)
+
+# Valor presente del valor nominal (principal)
+vp_principal = valor_nominal / (1 + tasa_descuento)**plazo
+valores_presentes.append(vp_principal)
+
+# Valor total del bono
+valor_bono = sum(valores_presentes)
+
+print(f"Valor presente del bono: ${valor_bono:.2f}")
+
+print('Conclusión: Cuando la tasa cupón = tasa mercado, el valor presente del bono es igual a su valor nominal')
+```
+
+Si la Tasa de Mercado fuese 12%
+
+```{r}
+# --- Código original en Python ---
+# Parámetros del bono
+valor_nominal = 1000       # Valor facial
+tasa_cupon = 0.10          # 10% anual
+plazo = 10                 # 10 años
+tasa_descuento = 0.12      # 12% anual
+
+# Flujo de cupones
+cupon_anual = valor_nominal * tasa_cupon
+
+# Calcular el valor presente de cada flujo
+valores_presentes = []
+for t in range(1, plazo + 1):
+    vp_cupon = cupon_anual / (1 + tasa_descuento)**t
+    valores_presentes.append(vp_cupon)
+
+# Valor presente del valor nominal (principal)
+vp_principal = valor_nominal / (1 + tasa_descuento)**plazo
+valores_presentes.append(vp_principal)
+
+# Valor total del bono
+valor_bono_tasa_12 = sum(valores_presentes)
+
+print(f"Cuando la tasa de mercado es 12%, El Valor Presente del Bono es : ${valor_bono_tasa_12:.2f}")
+print('Conclusión: Se vende con descuento porque la tasa de mercado > tasa cupón')
+```
+
+Si la Tasa de mercado fuese 8%
+
+```{r}
+# --- Código original en Python ---
+# Parámetros del bono
+valor_nominal = 1000       # Valor facial
+tasa_cupon = 0.10          # 10% anual
+plazo = 10                 # 10 años
+tasa_descuento = 0.08      # 8% anual
+
+# Flujo de cupones
+cupon_anual = valor_nominal * tasa_cupon
+
+# Calcular el valor presente de cada flujo
+valores_presentes = []
+for t in range(1, plazo + 1):
+    vp_cupon = cupon_anual / (1 + tasa_descuento)**t
+    valores_presentes.append(vp_cupon)
+
+# Valor presente del valor nominal (principal)
+vp_principal = valor_nominal / (1 + tasa_descuento)**plazo
+valores_presentes.append(vp_principal)
+
+# Valor total del bono
+valor_bono_tasa_8 = sum(valores_presentes)
+
+print(f"Cuando la tasa de mercado es 8%, El Valor Presente del Bono es : ${valor_bono_tasa_8:.2f}")
+print('Conclusión: Se valora en $1134,20 con prima, ya que la tasa de mercado < tasa cupón')
+```
+
+Graficar los valores presentes de los bonos, cuando la tasa es 10%, 12% y 8%
+
+```{r}
+# --- Código original en Python ---
+# Crear un diccionario para almacenar los valores del bono para diferentes tasas de descuento
+valores_bono_por_tasa = {
+  '10%': valor_bono,
+  '12%': valor_bono_tasa_12,
+  '8%': valor_bono_tasa_8
+}
+
+# Convertir el diccionario a un DataFrame para facilitar la graficación
+df_bono_tasas = pd.DataFrame(list(valores_bono_por_tasa.items()), columns=['Tasa de Descuento', 'Valor Presente del Bono'])
+
+# Graficar los valores del bono
+plt.figure(figsize=(8, 5))
+sns.barplot(x='Tasa de Descuento', y='Valor Presente del Bono', data=df_bono_tasas)
+plt.title("Valor Presente del Bono a Diferentes Tasas de Descuento")
+plt.ylabel("Valor del Bono (CLP)")
+plt.xlabel("Tasa de Descuento del Mercado")
+plt.ylim(500, 1200)
+plt.show()
+```
+
+#FUTURO
+
+###Futuro del Petróleo WTI
+###El día 15 de mayo, un inversionista toma una posición larga en 2 contratos de futuros de petróleo WTI, con las siguientes condiciones:
+
+
+
+1.  Precio futuro (15 de mayo): $75 por barril.
+
+2.  Cada contrato cubre: 1.000 barriles.
+
+3.  Precio spot (15 de agosto): $82 por barril.
+
+4. Margen inicial por contrato: $5.000
+
+###Preguntas:
+###¿Cuál es la ganancia o pérdida total al vencimiento?
+###¿Cuál es el retorno porcentual sobre el margen invertido?
+
+```{r}
+# --- Código original en Python ---
+# DATOS EJERCICIO PETROLEO WTI
+precio_inicial = 75           # Precio futuro al abrir la posición (USD/barril)
+precio_final = 82             # Precio futuro al cierre (15 de agosto)
+barriles_por_contrato = 1000  # Cada contrato cubre 1000 barriles
+n_contratos = 2               # Se toman 2 contratos
+margen_por_contrato = 5000    # Margen inicial por contrato (USD)
+
+# Cálculos
+# Ganancia por contrato
+ganancia_unitaria = (precio_final - precio_inicial) * barriles_por_contrato
+ganancia_total = ganancia_unitaria * n_contratos
+
+# Inversión inicial (margen total)
+margen_total = margen_por_contrato * n_contratos
+
+# Retorno sobre el margen
+retorno_porcentual = (ganancia_total / margen_total) * 100
+
+# Mostrar resultados
+print(" RESULTADOS DEL FUTURO DE PETRÓLEO WTI – POSICIÓN LARGA\n")
+print(f"Precio futuro (inicio): ${precio_inicial:.2f}/barril")
+print(f"Precio spot (vencimiento): ${precio_final:.2f}/barril")
+print(f"Contratos: {n_contratos} × {barriles_por_contrato} barriles")
+print(f"Ganancia total: ${ganancia_total:.2f}")
+print(f"Margen total invertido: ${margen_total:.2f}")
+print(f"Retorno sobre margen: {retorno_porcentual:.2f}%")
+```
+
+Ahora si fuese "pérdida", es decir Precio Spot al 15 de agosto = 70.00/barril
+
+```{r}
+# --- Código original en Python ---
+# DATOS WTI CASO PÉRDIDA
+precio_inicial = 75           # Precio del futuro al abrir la posición
+precio_final = 70             # Precio del futuro al vencimiento (bajó)
+barriles_por_contrato = 1000  # Cada contrato cubre 1000 barriles
+n_contratos = 2               # Total de contratos tomados
+margen_por_contrato = 5000    # Margen inicial por contrato
+
+# Cálculos
+# Pérdida por contrato
+perdida_unitaria = (precio_final - precio_inicial) * barriles_por_contrato
+perdida_total = perdida_unitaria * n_contratos
+
+# Inversión inicial (margen total)
+margen_total = margen_por_contrato * n_contratos
+
+# Retorno sobre margen
+retorno_porcentual = (perdida_total / margen_total) * 100
+
+# Mostrar resultados
+print("FUTUROS DE PETRÓLEO WTI – PÉRDIDA EN POSICIÓN LARGA\n")
+print(f" Precio futuro (inicio): ${precio_inicial:.2f}/barril")
+print(f" Precio spot (vencimiento): ${precio_final:.2f}/barril")
+print(f" Contratos: {n_contratos} × {barriles_por_contrato} barriles")
+print(f" Pérdida total: ${perdida_total:.2f}")
+print(f" Margen total invertido: ${margen_total:.2f}")
+print(f" Retorno sobre margen: {retorno_porcentual:.2f}%")
+```
+
+Visualicemos graficamente cuando el spot de vencimiento es 82.00/barril (ganancia) y 70.00/barril (pérdida)
+
+```{r}
+# --- Código original en Python ---
+# Preparar datos para la gráfica de Futuros
+precios_spot = [82, 70]  # Precios spot de vencimiento (ganancia y pérdida)
+# Calcular las ganancias/pérdidas correspondientes
+ganancias_perdidas = [(p - precio_inicial) * barriles_por_contrato * n_contratos for p in precios_spot]
+
+# Crear un DataFrame para la gráfica
+df_futuros = pd.DataFrame({
+    'Precio Spot al Vencimiento ($/barril)': precios_spot,
+    'Ganancia/Pérdida Total ($)' : ganancias_perdidas
+})
+
+# Graficar
+plt.figure(figsize=(8, 5))
+sns.barplot(x ='Precio Spot al Vencimiento ($/barril)', y ='Ganancia/Pérdida Total ($)', data=df_futuros, palette=['red', 'green']) # Usar colores para ganancia/pérdida
+plt.title("Ganancia o Pérdida en Futuros de Petróleo WTI al Vencimiento")
+plt.ylabel("Ganancia/Pérdida Total ($)")
+plt.xlabel("Precio Spot al Vencimiento ($/barril)")
+plt.axhline(0, color='black', linestyle='--', linewidth=0.8) # Línea en 0 para visualizar mejor la ganancia/pérdida
+plt.show()
+```
+
+#FORWARD
+
+###Un importador que compra mercaderías en EEUU y vende en el mercado local, está estimando que el precio del dólar subirá en los proximos 90 días. Momento en el cual pagará la mercadería. Por esta razón, es que desea asegurar el tipo de cambio hoy, debido a que lo considera más conveniente.
+
+Datos:
+*   Valor de Mercadería: 1 MM USD
+*   Tasa SPOT: 740 - 750
+*   Tasa en Pesos Chilenos: 0.8% - 0.9&
+*   Tasas en USD: 2.3% - 2.4%
+
+```{r}
+# --- Código original en Python ---
+# Parámetros iniciales
+spot_compra = 740
+spot_venta = 750
+tasa_pesos = 0.009   # 0.9%
+tasa_usd = 0.023     # 2.3%
+dias = 90
+```
+
+```{r}
+# --- Código original en Python ---
+# Como es una compra de un importador, se realiza el cálculo tipo de cambio forward venta
+def calcular_forward_venta(spot_compra, tasa_local, tasa_extranjera, dias):
+    forward_venta = spot_compra * (1 + tasa_local * (dias / 30 )) / (1 + tasa_extranjera * (dias / 360))
+    return forward_venta
+
+forward_venta = calcular_forward_venta(spot_compra, tasa_pesos, tasa_usd, dias)
+
+print(f"Tipo de cambio forward venta (compra futura de  1 millón de USD en mercadería): {forward_venta:.2f} CLP/USD")
+```
+
+¿Es conveniente?, Analicemoslo graficamente...
+
+```{r}
+# --- Código original en Python ---
+# Preparar datos para graficar
+labels = ['Spot Compra', 'Forward Venta']
+valores = [spot_compra, forward_venta]
+
+# Graficar
+plt.figure(figsize=(8, 5))
+sns.barplot(x=labels, y=valores)
+plt.title("Comparación: Spot Compra vs. Forward Venta para Importador")
+plt.ylabel("Tipo de Cambio (CLP/USD)")
+plt.ylim(min(valores) * 0.95, max(valores) * 1.05) # Ajustar límites para mejor visualización
+plt.show()
+
+# Análisis de conveniencia para el importador
+print("\nAnálisis para el Importador:")
+print(f"Tipo de cambio Spot Compra (hoy): {spot_compra} CLP/USD")
+print(f"Tipo de cambio Forward Venta (a 90 días): {forward_venta:.2f} CLP/USD")
+
+if forward_venta > spot_compra:
+    print("El tipo de cambio forward venta es MAYOR que el spot compra.")
+    print("Para el importador, esto significa que al asegurar el tipo de cambio hoy (via forward),")
+    print("pagará más CLP por cada USD en 90 días de lo que pagaría si usara el tipo spot actual.")
+    print("Si el importador espera que el dólar suba *significativamente* por encima del precio forward calculado,")
+    print("entonces asegurar el forward podría ser conveniente para evitar un tipo de cambio spot aún mayor en 90 días.")
+    print("Sin embargo, si la expectativa es que el dólar suba *hasta* o *menos* del precio forward, no sería conveniente fijarlo hoy.")
+elif forward_venta < spot_compra:
+    print("El tipo de cambio forward venta es MENOR que el spot compra.")
+    print("Para el importador, asegurar el tipo de cambio hoy (via forward) implica pagar menos CLP por cada USD en 90 días")
+    print("de lo que pagaría si usara el tipo spot actual.")
+    print("Esto sería conveniente si el importador espera que el dólar suba por encima del precio forward o se mantenga estable/baje (aunque en ese caso el spot futuro sería aún mejor).")
+else:
+    print("El tipo de cambio forward venta es IGUAL que el spot compra (aproximadamente).")
+    print("No hay una ventaja clara en fijar el tipo de cambio hoy basado solo en esta comparación directa.")
+    print("La decisión de tomar el forward dependería de la aversión al riesgo del importador y sus expectativas sobre movimientos futuros del tipo de cambio spot.")
+
+print("\nConclusión:")
+print("Basado solo en la comparación directa del precio forward calculado con el spot actual,")
+print("fijar un forward venta en {:.2f} CLP/USD es ".format(forward_venta) +
+      ("MENOS conveniente" if forward_venta > spot_compra else "MÁS conveniente" if forward_venta < spot_compra else "neutro") +
+      " que usar el tipo de cambio spot actual de {} CLP/USD.".format(spot_compra))
+print("La conveniencia final depende de la expectativa del importador sobre el tipo de cambio spot real que habrá en 90 días.")
+print("Si el importador cree que el spot en 90 días será mayor que el forward calculado, le conviene tomar el forward.")
+print("Si cree que el spot en 90 días será menor que el forward calculado, le conviene esperar y usar el spot futuro.")
+```
+
+#FRA
+
+Un empresario trata de asegurarse, para dentro de 6 meses, un préstamo a 3 meses, al 3,5% de interés.
+Adopta una posición compradora de un
+FRA(6/9), para un valor nominal de 100.000 € y un tipo garantizado del 3,5%.
+El periodo de garantía es de 90 días. Consideremos dos situaciones totalmente contrarias y comprobemos que se alcanza el objetivo perseguido:
+
+1. Que al cabo de 6 meses el tipo de interés del mercado, por ejemplo, Euribor a 3 meses, se sitúe en el 4%.
+
+2. Que al cabo de 6 meses el tipo de mercado se sitúe en el 3%.
+
+Datos FRA(6/9)
+
+```{r}
+# --- Código original en Python ---
+# DATOS FRA(6/9)
+nominal_fra = 100000  # Valor nominal del FRA en €
+tasa_fra_garantizada = 0.035 # Tasa garantizada en el FRA (3.5%)
+meses_inicio = 6      # Meses hasta el inicio del préstamo (6 meses)
+meses_duracion = 3    # Duración del préstamo (3 meses) - Periodo de garantía
+dias_duracion = 90    # Días del periodo de garantía
+
+# Cálculo del tiempo en años para las fórmulas de interés
+T_inicio = meses_inicio / 12.0  # Tiempo en años hasta el inicio (6 meses)
+T_total = (meses_inicio + meses_duracion) / 12.0 # Tiempo en años hasta el fin (6+3=9 meses)
+dt = dias_duracion / 360.0      # Tiempo de duración del préstamo en años (90 días / 360)
+```
+
+Escenario 1: Tasa de mercado sube al 4%
+
+```{r}
+# --- Código original en Python ---
+# Escenario 1: Tasa de mercado a 6 meses (Euribor a 3 meses) sube al 4%
+tasa_mercado_escenario1 = 0.040 # Tasa de mercado a los 6 meses (4%)
+
+# Cálculo del pago del FRA en el Escenario 1 (el comprador recibe la diferencia si la tasa de mercado > tasa FRA)
+# La fórmula de liquidación del FRA es: Nominal * (T_mercado - T_FRA) * dt / (1 + T_mercado * dt)
+# Donde T_mercado y T_FRA son las tasas *anuales* y dt es la duración del periodo en años (base 360)
+pago_fra_escenario1 = nominal_fra * (tasa_mercado_escenario1 - tasa_fra_garantizada) * dt / (1 + tasa_mercado_escenario1 * dt)
+
+print("--- Análisis FRA(6/9) - Escenario 1: Tasa de Mercado al 4% ---")
+print(f"Valor Nominal del FRA: {nominal_fra} €")
+print(f"Tasa Garantizada (FRA): {tasa_fra_garantizada*100:.1f}%")
+print(f"Tasa de Mercado a los 6 meses: {tasa_mercado_escenario1*100:.1f}%")
+
+if tasa_mercado_escenario1 > tasa_fra_garantizada:
+    print(f"La tasa de mercado ({tasa_mercado_escenario1*100:.1f}%) es MAYOR que la tasa garantizada ({tasa_fra_garantizada*100:.1f}%).")
+    print("El comprador del FRA recibe un pago.")
+    print(f"Pago (liquidación) del FRA: {pago_fra_escenario1:.2f} €")
+elif tasa_mercado_escenario1 < tasa_fra_garantizada:
+     print(f"La tasa de mercado ({tasa_mercado_escenario1*100:.1f}%) es MENOR que la tasa garantizada ({tasa_fra_garantizada*100:.1f}%).")
+     print("El comprador del FRA paga la diferencia.")
+     print(f"Pago (liquidación) del FRA: {pago_fra_escenario1:.2f} € (pago recibido negativo = pago realizado)")
+else:
+    print("La tasa de mercado es IGUAL a la tasa garantizada. No hay pago de liquidación del FRA.")
+    print(f"Pago (liquidación) del FRA: {pago_fra_escenario1:.2f} €")
+
+# Comprobación del objetivo del empresario en Escenario 1
+# Costo del préstamo sin FRA: Nominal * Tasa Mercado * dt
+costo_prestamo_sin_fra_escenario1 = nominal_fra * tasa_mercado_escenario1 * dt
+# Costo neto del préstamo con FRA: Costo del préstamo sin FRA - Pago del FRA
+costo_prestamo_con_fra_escenario1 = costo_prestamo_sin_fra_escenario1 - pago_fra_escenario1
+
+print("\nComprobación del Objetivo (Tasa Efectiva con FRA):")
+print(f"Costo del préstamo sin FRA (a la tasa de mercado): {costo_prestamo_sin_fra_escenario1:.2f} €")
+print(f"Liquidación del FRA (recibida por el empresario): {pago_fra_escenario1:.2f} €")
+print(f"Costo Neto del préstamo con FRA: {costo_prestamo_con_fra_escenario1:.2f} €")
+# La tasa efectiva se calcula como (Costo Neto / Nominal) / dt
+tasa_efectiva_con_fra_escenario1 = (costo_prestamo_con_fra_escenario1 / nominal_fra) / dt
+
+print(f"Tasa Efectiva del Préstamo asegurada con el FRA: {tasa_efectiva_con_fra_escenario1*100:.1f}%")
+print("Objetivo alcanzado: El empresario se aseguró una tasa efectiva del 3.5% a pesar de que el mercado subió al 4%.")
+```
+
+Escenario 2: Tasa de mercado baja al 3%
+
+```{r}
+# --- Código original en Python ---
+# Escenario 2: Tasa de mercado a 6 meses (Euribor a 3 meses) baja al 3%
+tasa_mercado_escenario2 = 0.030 # Tasa de mercado a los 6 meses (3%)
+
+# Cálculo del pago del FRA en el Escenario 2 (el comprador paga la diferencia si la tasa de mercado < tasa FRA)
+pago_fra_escenario2 = nominal_fra * (tasa_mercado_escenario2 - tasa_fra_garantizada) * dt / (1 + tasa_mercado_escenario2 * dt)
+
+print("--- Análisis FRA(6/9) - Escenario 2: Tasa de Mercado al 3% ---")
+print(f"Valor Nominal del FRA: {nominal_fra} €")
+print(f"Tasa Garantizada (FRA): {tasa_fra_garantizada*100:.1f}%")
+print(f"Tasa de Mercado a los 6 meses: {tasa_mercado_escenario2*100:.1f}%")
+
+if tasa_mercado_escenario2 > tasa_fra_garantizada:
+    print(f"La tasa de mercado ({tasa_mercado_escenario2*100:.1f}%) es MAYOR que la tasa garantizada ({tasa_fra_garantizada*100:.1f}%).")
+    print("El comprador del FRA recibe un pago.")
+    print(f"Pago (liquidación) del FRA: {pago_fra_escenario2:.2f} €")
+elif tasa_mercado_escenario2 < tasa_fra_garantizada:
+     print(f"La tasa de mercado ({tasa_mercado_escenario2*100:.1f}%) es MENOR que la tasa garantizada ({tasa_fra_garantizada*100:.1f}%).")
+     print("El comprador del FRA paga la diferencia.")
+     # Un pago recibido negativo significa un pago realizado
+     print(f"Pago (liquidación) del FRA: {pago_fra_escenario2:.2f} € (pago recibido negativo = pago realizado)")
+else:
+    print("La tasa de mercado es IGUAL a la tasa garantizada. No hay pago de liquidación del FRA.")
+    print(f"Pago (liquidación) del FRA: {pago_fra_escenario2:.2f} €")
+
+
+# Comprobación del objetivo del empresario en Escenario 2
+# Costo del préstamo sin FRA: Nominal * Tasa Mercado * dt
+costo_prestamo_sin_fra_escenario2 = nominal_fra * tasa_mercado_escenario2 * dt
+# Costo neto del préstamo con FRA: Costo del préstamo sin FRA - Pago del FRA
+# Nota: Como pago_fra_escenario2 es negativo, restar un negativo es sumar el valor absoluto.
+# Esto refleja que el empresario paga la diferencia al otro lado del FRA.
+costo_prestamo_con_fra_escenario2 = costo_prestamo_sin_fra_escenario2 - pago_fra_escenario2
+
+
+print("\nComprobación del Objetivo (Tasa Efectiva con FRA):")
+print(f"Costo del préstamo sin FRA (a la tasa de mercado): {costo_prestamo_sin_fra_escenario2:.2f} €")
+print(f"Liquidación del FRA (pagada por el empresario): {-pago_fra_escenario2:.2f} €")
+print(f"Costo Neto del préstamo con FRA: {costo_prestamo_con_fra_escenario2:.2f} €")
+# La tasa efectiva se calcula como (Costo Neto / Nominal) / dt
+tasa_efectiva_con_fra_escenario2 = (costo_prestamo_con_fra_escenario2 / nominal_fra) / dt
+
+print(f"Tasa Efectiva del Préstamo asegurada con el FRA: {tasa_efectiva_con_fra_escenario2*100:.1f}%")
+print("Objetivo alcanzado: El empresario se aseguró una tasa efectiva del 3.5% a pesar de que el mercado bajó al 3%.")
+```
+
+Conclusión
+
+```{r}
+# --- Código original en Python ---
+print("\nConclusión del FRA:")
+print("En ambos escenarios, el FRA cumple su función de cobertura. El empresario, al tomar una posición compradora, ")
+print(f"asegura una tasa efectiva del {tasa_fra_garantizada*100:.1f}% para su préstamo futuro de 3 meses, ")
+print("independientemente de si la tasa de mercado sube o baja.")
+print("Si la tasa de mercado sube, el pago recibido del FRA compensa el mayor costo del préstamo.")
+print("Si la tasa de mercado baja, el pago realizado por el FRA anula el beneficio de una tasa de mercado más baja en el préstamo.")
+```
+
+Graficos
+
+```{r}
+# --- Código original en Python ---
+#Graficos de los costos netos del préstamo con y sin FRA
+costos_sin_fra = [costo_prestamo_sin_fra_escenario1, costo_prestamo_sin_fra_escenario2]
+costos_con_fra = [costo_prestamo_con_fra_escenario1, costo_prestamo_con_fra_escenario2]
+etiquetas_escenarios = ['Mercado al 4%', 'Mercado al 3%']
+
+df_fra_costos = pd.DataFrame({
+    'Escenario': etiquetas_escenarios,
+    'Costo Sin FRA': costos_sin_fra,
+    'Costo Con FRA': costos_con_fra
+})
+
+df_fra_costos_melted = df_fra_costos.melt(id_vars='Escenario', var_name='Situación', value_name='Costo Total (€)')
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x='Escenario', y='Costo Total (€)', hue='Situación', data=df_fra_costos_melted, palette='viridis')
+plt.title("Costo Total del Préstamo (Nominal 100.000 €) con y sin Cobertura FRA")
+plt.ylabel("Costo Total (€)")
+plt.xlabel("Escenario de Tasa de Mercado a los 6 Meses")
+plt.show()
+
+# Graficos de las tasas efectivas
+tasas_efectivas_con_fra = [tasa_efectiva_con_fra_escenario1*100, tasa_efectiva_con_fra_escenario2*100]
+tasas_mercado = [tasa_mercado_escenario1*100, tasa_mercado_escenario2*100]
+
+df_fra_tasas = pd.DataFrame({
+    'Escenario': etiquetas_escenarios,
+    'Tasa Efectiva con FRA (%)': tasas_efectivas_con_fra,
+    'Tasa de Mercado (%)': tasas_mercado,
+    'Tasa Garantizada FRA (%)': [tasa_fra_garantizada*100, tasa_fra_garantizada*100]
+})
+
+df_fra_tasas_melted = df_fra_tasas.melt(id_vars='Escenario', var_name='Tipo de Tasa', value_name='Tasa (%)')
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x='Escenario', y='Tasa (%)', hue='Tipo de Tasa', data=df_fra_tasas_melted, palette='plasma')
+plt.title("Comparación de Tasas: Mercado vs. Efectiva con Cobertura FRA")
+plt.ylabel("Tasa (%)")
+plt.xlabel("Escenario de Tasa de Mercado a los 6 Meses")
+plt.axhline(y=tasa_fra_garantizada*100, color='red', linestyle='--', label=f'Tasa Garantizada ({tasa_fra_garantizada*100:.1f}%)')
+plt.legend()
+plt.show()
+```
+
+#OPCIONES
+
+La acción del Banco de Chile está cotizando en la bolsa a 10 pesos.
+Debido a la incertidumbre del mercado financiero, un inversionista supone que el precio podría Aumentar o Disminuir en un 20% en los próximos 2 años.
+La R anual es de 1,1% (SIMPLE).
+Considerando los siguientes datos:
+*   Prima de opciòn 1,15.
+*   Paquete de 100 acciones.
+*   Precio Strike de 8 pesos (K = 8)
+
+A)Calcular el precio de una CALL europea a 2 años.
+¿Se ejerce la opción cuando la cotización está sobre el precio strike? ¿Que sucede cuando es inferior?
+
+```{r}
+# --- Código original en Python ---
+# DATOS OPCIONES - MODELO BINOMIAL SIMPLE (1 PERIODO)
+S0 = 10            # Precio actual de la acción (pesos)
+u = 1.20           # Factor de aumento (20% subida)
+d = 0.80           # Factor de disminución (20% bajada)
+r_simple_anual = 0.011 # Tasa de interés anual simple (1.1%)
+T = 2              # Plazo de la opción (años)
+K = 8              # Precio Strike (pesos)
+prima = 1.15       # Prima pagada por la opción CALL
+paquete_acciones = 100 # Número de acciones en el paquete
+
+# Convertir la tasa simple anual a tasa compuesta para el período T
+# En el modelo binomial, la tasa r es usualmente una tasa compuesta o continua.
+# Asumiremos que la R simple anual es una tasa *compuesta* anual para poder usar la fórmula estándar de riesgo neutral.
+r_compuesta_equivalente = r_simple_anual # Interpretamos R simple anual como tasa compuesta anual
+
+# Calcular precios de la acción al final de 2 años (T)
+Su = S0 * u
+Sd = S0 * d
+
+print("--- Análisis Opción CALL Europea - Modelo Binomial (1 Periodo, 2 años) ---")
+print(f"Precio actual de la acción (S0): {S0:.2f} pesos")
+print(f"Precio Strike (K): {K:.2f} pesos")
+print(f"Factor de subida (u): {u:.2f}")
+print(f"Factor de bajada (d): {d:.2f}")
+print(f"Tasa de interés simple/compuesta anual (R): {r_simple_anual*100:.1f}%")
+print(f"Plazo (T): {T} años (Considerado como 1 periodo grande en este modelo simple)")
+print(f"Precio de la acción si sube (Su) = S0 * u = {S0} * {u} = {Su:.2f} pesos")
+print(f"Precio de la acción si baja (Sd) = S0 * d = {S0} * {d} = {Sd:.2f} pesos")
+
+# Verificar la condición de no-arbitraje: d < (1+R)^T < u
+factor_crecimiento_rf = (1 + r_compuesta_equivalente)**T
+print(f"\nVerificando no-arbitraje: d < (1+R)^T < u => {d} < {factor_crecimiento_rf:.4f} < {u}")
+if d < factor_crecimiento_rf < u:
+    print("Condición de no-arbitraje SÍ se cumple.")
+else:
+    print("¡Advertencia: La condición de no-arbitraje NO se cumple.")
+    print("No existe una probabilidad de riesgo neutral válida en este caso con estos parámetros.")
+    # Procedemos con el cálculo pero con la advertencia
+    pass # Continue with the calculation despite the warning
+
+
+# Calcular el valor intrínseco de la opción CALL al vencimiento (T=2 años)
+# C_T = max(ST - K, 0)
+Cu = max(Su - K, 0)
+Cd = max(Sd - K, 0)
+
+print(f"\nValor de la CALL al vencimiento si sube (Cu) = max(Su - K, 0) = max({Su} - {K}, 0) = {Cu:.2f} pesos")
+print(f"Valor de la CALL al vencimiento si baja (Cd) = max(Sd - K, 0) = max({Sd} - {K}, 0) = {Cd:.2f} pesos")
+
+# Calcular la probabilidad de riesgo neutral (q) para un modelo binomial de 1 periodo (2 años)
+# q = ((1 + R)**T - d) / (u - d)
+q = (factor_crecimiento_rf - d) / (u - d)
+
+
+print(f"\nProbabilidad de riesgo neutral (q): {q:.4f}")
+print(f"Probabilidad de bajada (1-q): {1-q:.4f}")
+
+# Factor de descuento para T=2 años usando la tasa compuesta anual
+factor_descuento = 1 / factor_crecimiento_rf
+print(f"Factor de descuento para {T} años (1 / (1+R)^T): {factor_descuento:.4f}")
+
+# Calcular el precio de la opción CALL hoy (C0) usando la probabilidad de riesgo neutral
+C0 = (q * Cu + (1 - q) * Cd) * factor_descuento
+
+print(f"\nPrecio de la opción CALL hoy (C0) = [q * Cu + (1-q) * Cd] * Factor Descuento")
+print(f"C0 = [{q:.4f} * {Cu:.2f} + {1-q:.4f} * {Cd:.2f}] * {factor_descuento:.4f}")
+print(f"C0 = [{q * Cu + (1-q) * Cd:.4f}] * {factor_descuento:.4f}")
+print(f"A) Precio teórico de una CALL europea a 2 años: {C0:.2f} pesos")
+
+# Valor total del paquete de opciones
+valor_paquete_opciones = C0 * paquete_acciones
+
+print(f"Valor teórico del paquete de {paquete_acciones} opciones CALL: {valor_paquete_opciones:.2f} pesos")
+
+# ¿Se ejerce la opción cuando la cotización está sobre el precio strike? ¿Que sucede cuando es inferior?
+print("\n--- B) Decisión de Ejercicio de una Opción CALL Europea ---")
+
+# Recordar que una opción Europea solo puede ejercerse al vencimiento (en este caso, a los 2 años)
+print("Una opción CALL Europea solo puede ser ejercida en su fecha de vencimiento (a los 2 años).")
+
+print(f"\nPrecio Strike (K) = {K:.2f} pesos")
+
+print("Al vencimiento (a los 2 años), se compara el precio de la acción (ST) con el Precio Strike (K):")
+print("1. Si la cotización está SOBRE el precio strike (ST > K):")
+print(f"   Ejemplo: Si el precio al vencimiento es Su = {Su:.2f}, que es > K = {K:.2f}.")
+print("   El tenedor de la opción tiene el DERECHO (no la obligación) de COMPRAR la acción al precio K.")
+print(f"   Como K ({K:.2f}) es menor que el precio de mercado ST ({Su:.2f}), es rentable ejercer la opción.")
+print(f"   Al ejercer, compra a {K:.2f} y podría vender inmediatamente en el mercado a {Su:.2f}, obteniendo una ganancia bruta por acción de Su - K = {Cu:.2f} pesos.")
+print("   Por lo tanto, SÍ se ejerce la opción cuando la cotización al vencimiento está sobre el precio strike.")
+
+print("\n2. Si la cotización es INFERIOR o igual al precio strike (ST <= K):")
+print(f"   Ejemplo: Si el precio al vencimiento es Sd = {Sd:.2f}, que es <= K = {K:.2f}.")
+print("   El tenedor de la opción tiene el DERECHO de COMPRAR la acción al precio K.")
+print(f"   Como K ({K:.2f}) es mayor o igual que el precio de mercado ST ({Sd:.2f}), NO es rentable ejercer la opción.")
+print(f"   Sería más barato comprar la acción directamente en el mercado a ST ({Sd:.2f}) que ejercer la opción y comprarla a K ({K:.2f}).")
+print("   Por lo tanto, NO se ejerce la opción cuando la cotización al vencimiento es inferior o igual al precio strike.")
+print("   La opción simplemente expira sin valor (Cd = 0).")
+
+
+# Consideración adicional: Prima pagada (para la ganancia neta del inversionista)
+print("\n--- Rentabilidad Neta considerando la Prima Pagada ---")
+print(f"Prima pagada por opción: {prima:.2f} pesos")
+
+# Para que el inversionista tenga una ganancia neta positiva, el precio de la acción al vencimiento (ST) debe superar el Precio Strike más la prima pagada.
+punto_equilibrio = K + prima
+print(f"\nPara que la opción CALL genere una GANANCIA NETA para el inversionista (recuperando la prima pagada), el precio de la acción al vencimiento (ST) debe ser mayor que el punto de equilibrio:")
+print(f"Punto de Equilibrio = Precio Strike (K) + Prima pagada = {K:.2f} + {prima:.2f} = {punto_equilibrio:.2f} pesos.")
+print(f"- Si al vencimiento ST > {punto_equilibrio:.2f}: La opción se ejerce, y la ganancia bruta (ST - K) es mayor que la prima, resultando en una ganancia neta positiva.")
+print(f"- Si al vencimiento {K:.2f} < ST <= {punto_equilibrio:.2f}: La opción se ejerce, pero la ganancia bruta (ST - K) es menor o igual que la prima, resultando en una pérdida neta o cero.")
+print(f"- Si al vencimiento ST <= {K:.2f}: La opción no se ejerce y expira sin valor. La pérdida neta es igual a la prima pagada ({prima:.2f}).")
+
+
+# Visualización de la ganancia/pérdida de la opción CALL al vencimiento
+precios_st = np.linspace(0, S0 * 2.5, 100) # Rango de posibles precios al vencimiento
+payoff_call = np.maximum(precios_st - K, 0) # Ganancia bruta del ejercicio
+ganancia_neta_call = payoff_call - prima  # Ganancia neta considerando la prima
+
+plt.figure(figsize=(10, 6))
+plt.plot(precios_st, ganancia_neta_call, label='Ganancia Neta CALL', color='blue')
+plt.axhline(0, color='gray', linestyle='--', linewidth=0.8) # Eje de cero ganancia
+plt.axvline(K, color='red', linestyle='-', label=f'Precio Strike K={K:.2f}') # Línea del Strike
+plt.axvline(punto_equilibrio, color='green', linestyle='-.', label=f'Punto de Equilibrio={punto_equilibrio:.2f}') # Punto de equilibrio
+plt.title('Ganancia/Pérdida Neta de una Opción CALL Europea al Vencimiento')
+plt.xlabel('Precio de la Acción al Vencimiento (ST)')
+plt.ylabel('Ganancia/Pérdida Neta por Acción ($)')
+plt.grid(True)
+plt.legend()
+plt.ylim(-prima * 1.2, max(ganancia_neta_call) * 1.2) # Ajustar límites para mejor visualización
+plt.xlim(0, S0*2.5)
+plt.show()
+
+print("\nInterpretación del gráfico:")
+print(f"- La línea horizontal punteada en 0 representa la ganancia/pérdida nula.")
+print(f"- La línea roja vertical indica el Precio Strike ({K:.2f}). A la izquierda de esta línea, la opción no se ejerce y la pérdida es la prima.")
+print(f"- La línea verde vertical indica el Punto de Equilibrio ({punto_equilibrio:.2f}).")
+print(f"- Si ST <= {K:.2f}, la opción expira sin valor, y la pérdida neta es igual a la prima pagada ({prima:.2f}).")
+print(f"- Si {K:.2f} < ST <= {punto_equilibrio:.2f}, la opción se ejerce (ganancia bruta ST - K > 0), pero la ganancia bruta no cubre la prima, resultando en una pérdida neta (menos que la prima).")
+print(f"- Si ST > {punto_equilibrio:.2f}, la opción se ejerce, y la ganancia bruta supera la prima, resultando en una ganancia neta positiva.")
+```
+
+# Cálculo UF Futura
+
+Estimar la UF del día 9 de Agosto, teniendo en cuenta la UF conocida del día 16 de Junio = $39.230,48, IPC Mayo = 0,2% e IPC Junio = -0,4%
+
+```{r}
+# --- Código original en Python ---
+# definición de variables
+UF_ini = 39230.48 # 16 de junio
+IPC_mayo = 0.002 # 0,2 %
+IPC_jun = -0.004 # -0,4 %
+
+# dias desde la UF conocida hasta el 9 de agosto, por tramo
+T1 = 23 # 16 jun -> 9 jul
+n1 = 30 # junio tiene 30 dias
+T2 = 31 # 10 jul -> 9 ago
+n2 = 31 # julio tiene 31 dias
+
+# calculo paso a paso
+UF_9jul = UF_ini * (1 + IPC_mayo)**(T1 / n1)
+UF_9ago = UF_9jul * (1 + IPC_jun)**(T2 / n2)
+
+# Cálculo a través del método directo (contando un tramo completo)
+UF_9ago_2 = UF_ini * (1 + IPC_mayo) ** (T1 / n1) * (1 + IPC_jun) ** (T2 / n2)
+
+print(f"UF al 9 de julio: ${round(UF_9jul, 2):,.2f}")
+print(f"UF al 9 de agosto (paso a paso): ${round(UF_9ago, 2):,.2f}")
+print(f"UF al 9 de agosto (método directo): ${round(UF_9ago_2, 2):,.2f}")
+print(f"\nConclusión: Debido a la variación negativa del IPC en junio, el valor de la UF disminuyó de ${UF_ini:,.2f} a ${UF_9ago:,.2f} al 9 de agosto.")
+
+#Transcurso de la UF en el tiempo:
+
+# Fechas desde el 16 de junio al 9 de agosto
+fecha_ini = datetime(2024, 6, 16)
+fecha_fin = datetime(2024, 8, 9)
+dias_totales = (fecha_fin - fecha_ini).days + 1
+
+fechas = [fecha_ini + timedelta(days=i) for i in range(dias_totales)]
+ufs = []
+
+for fecha in fechas:
+    if fecha <= datetime(2024, 7, 9):
+        # Tramo 1: aplica IPC mayo
+        dias_pasados = (fecha - fecha_ini).days
+        uf_val = UF_ini * (1 + IPC_mayo) ** (dias_pasados / n1)
+    else:
+        # Tramo 2: aplica IPC junio
+        dias_tramo2 = (fecha - datetime(2024, 7, 9)).days
+        uf_val = UF_9jul * (1 + IPC_jun) ** (dias_tramo2 / n2)
+    ufs.append(round(uf_val, 2))
+
+# Crear tabla
+df_uf = pd.DataFrame({
+    'Fecha': fechas,
+    'UF estimada ($)': ufs
+})
+
+# Mostrar tabla
+print("\n--- TABLA DE EVOLUCIÓN DIARIA DE UF ---")
+print(df_uf)
+
+# --- GRAFICAR EVOLUCIÓN ---
+plt.figure(figsize=(10, 5))
+plt.plot(df_uf['Fecha'], df_uf['UF estimada ($)'], marker='o', linestyle='-', color='blue')
+plt.title('Evolución estimada de la UF (16 jun - 9 ago)')
+plt.xlabel('Fecha')
+plt.ylabel('UF estimada ($)')
+plt.grid(True)
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+```
+
+# Modelo Black and Scholes & Paridad Put-Call
+
+Una acción de L'Oréal se tranza  a 380 Eur con una desviación estándar del 16%, tasa libre de riesgo de 4%.
+
+Determinar el precio de la opción call y put con vencimiento t = 2 y un precio strike de 378 Eur.
+
+```{r}
+# --- Código original en Python ---
+# prompt: Una acción de L'Oréal se tranza  a 380 Eur con una desviación estándar del 16%, tasa libre de riesgo de 4%.
+# Determinar el precio de la opción call y put con vencimiento t = 2 y un precio strike de 378 Eur. Utilizando modelo Black and Scholes y Paridad put call.
+
+# Parámetros para Black-Scholes
+S = 380     # Precio actual de la acción (L'Oréal)
+K = 378     # Precio Strike de la opción
+T = 2       # Tiempo al vencimiento (en años)
+sigma = 0.16  # Volatilidad anual (desviación estándar)
+r_anual = 0.04 # Tasa libre de riesgo anual (4%)
+
+# Convertir tasa anual a continua (Black-Scholes usa tasas continuas)
+# r_continua = np.log(1 + r_anual) # En este caso, se asume que la tasa del 4% ya es continua, que es lo común en Black-Scholes.
+# Usamos r_anual directamente como r continua
+r = r_anual
+
+# Calcular d1 y d2 para el modelo Black-Scholes
+# d1 = [ln(S/K) + (r + sigma^2 / 2) * T] / (sigma * sqrt(T))
+# d2 = d1 - sigma * sqrt(T)
+d1 = (np.log(S / K) + (r + sigma**2 / 2) * T) / (sigma * np.sqrt(T))
+d2 = d1 - sigma * np.sqrt(T)
+
+print("--- Modelo Black-Scholes para Opciones Europeas ---")
+print(f"Precio de la acción (S): {S:.2f} Eur")
+print(f"Precio Strike (K): {K:.2f} Eur")
+print(f"Tiempo al vencimiento (T): {T:.2f} años")
+print(f"Volatilidad (sigma): {sigma*100:.1f}%")
+print(f"Tasa libre de riesgo (r): {r*100:.1f}%")
+print(f"\nd1: {d1:.4f}")
+print(f"d2: {d2:.4f}")
+
+# Calcular N(d1) y N(d2) - Las probabilidades de la normal estándar acumulada
+# Usamos norm.cdf() de scipy.stats
+Nd1 = norm.cdf(d1)
+Nd2 = norm.cdf(d2)
+N_minus_d1 = norm.cdf(-d1) # Para la Put, N(-d1)
+N_minus_d2 = norm.cdf(-d2) # Para la Put, N(-d2)
+
+print(f"\nN(d1): {Nd1:.4f}")
+print(f"N(d2): {Nd2:.4f}")
+print(f"N(-d1): {N_minus_d1:.4f}")
+print(f"N(-d2): {N_minus_d2:.4f}")
+
+# Calcular el precio de la opción CALL Europea (C)
+# C = S * N(d1) - K * exp(-rT) * N(d2)
+C = S * Nd1 - K * np.exp(-r * T) * Nd2
+
+# Calcular el precio de la opción PUT Europea (P)
+# P = K * exp(-rT) * N(-d2) - S * N(-d1)
+P_bs = K * np.exp(-r * T) * N_minus_d2 - S * N_minus_d1
+
+
+print(f"\nPrecio teórico de la opción CALL Europea (Modelo Black-Scholes): {C:.2f} Eur")
+print(f"Precio teórico de la opción PUT Europea (Modelo Black-Scholes): {P_bs:.2f} Eur")
+
+# --- Paridad Put-Call ---
+# La paridad put-call relaciona los precios de una opción call europea, una opción put europea,
+# el precio de la acción y el valor presente del precio strike, para el mismo subyacente,
+# mismo strike y mismo vencimiento.
+# La relación es: C + K * exp(-rT) = P + S
+# Si conocemos C, S, K y r, podemos despejar P:
+# P = C + K * exp(-rT) - S
+
+print("\n--- Paridad Put-Call ---")
+print(f"Relación: C + K * exp(-rT) = P + S")
+print(f"Donde exp(-rT) es el factor de descuento para el Strike.")
+
+# Calcular el valor presente del Strike
+PV_K = K * np.exp(-r * T)
+print(f"Valor presente del Strike (K * exp(-rT)): {PV_K:.2f} Eur")
+
+# Calcular el precio de la PUT utilizando la Paridad Put-Call y el precio de la CALL calculado con Black-Scholes
+P_paridad = C + PV_K - S
+
+print(f"\nCalculando el precio de la PUT usando Paridad Put-Call (P = C + PV(K) - S):")
+print(f"P = {C:.2f} + {PV_K:.2f} - {S:.2f}")
+print(f"Precio teórico de la opción PUT Europea (Paridad Put-Call): {P_paridad:.2f} Eur")
+
+# Verificamos si los precios de la Put de Black-Scholes y Paridad son cercanos
+print(f"\nComparación:")
+print(f"Precio PUT (Black-Scholes): {P_bs:.2f} Eur")
+print(f"Precio PUT (Paridad Put-Call): {P_paridad:.2f} Eur")
+print("Los precios calculados por ambos métodos deberían ser iguales (dentro de la precisión numérica).")
+
+# Podemos calcular el precio de la CALL usando la Paridad y el precio de la PUT de BS para verificar también
+C_paridad = P_bs + S - PV_K
+print(f"Verificación: Precio CALL usando Paridad Put-Call (C = P + S - PV(K)): {C_paridad:.2f} Eur")
+print(f"Precio CALL (Black-Scholes): {C:.2f} Eur")
+
+# CONCLUSIÓN
+print("\n--- Conclusión ---")
+print(f"Utilizando el modelo Black-Scholes, el precio teórico de la opción CALL Europea es {C:.2f} Eur.")
+print(f"El precio teórico de la opción PUT Europea, según Black-Scholes, es {P_bs:.2f} Eur.")
+print(f"La Paridad Put-Call confirma estos precios, resultando en un precio de {P_paridad:.2f} Eur para la opción PUT,")
+print(f"y {C_paridad:.2f} Eur para la opción CALL, demostrando la consistencia entre ambos métodos para opciones europeas sin dividendos.")
+
+# Graficar los resultados
+labels = ['Call (BS)', 'Put (BS)', 'Put (Paridad)', 'Call (Paridad)']
+precios = [C, P_bs, P_paridad, C_paridad]
+
+df_opciones = pd.DataFrame({'Opción': labels, 'Precio Teórico (Eur)': precios})
+
+plt.figure(figsize=(8, 6))
+sns.barplot(x='Opción', y='Precio Teórico (Eur)', data=df_opciones, palette='viridis')
+plt.title("Precios Teóricos de Opciones Europeas (L'Oréal)")
+plt.ylabel("Precio (Eur)")
+plt.ylim(0, max(precios) * 1.2)
+plt.show()
+
+# Visualizar el payoff de la Call y la Put al vencimiento (ignorando la prima por ahora, solo el valor intrínseco)
+precios_st_opciones = np.linspace(K * 0.5, S * 1.5, 100) # Rango de precios al vencimiento
+payoff_call_opciones = np.maximum(precios_st_opciones - K, 0)
+payoff_put_opciones = np.maximum(K - precios_st_opciones, 0)
+
+plt.figure(figsize=(10, 6))
+plt.plot(precios_st_opciones, payoff_call_opciones, label='Payoff CALL al Vencimiento', color='blue')
+plt.plot(precios_st_opciones, payoff_put_opciones, label='Payoff PUT al Vencimiento', color='orange', linestyle='--')
+plt.axhline(0, color='gray', linestyle='--', linewidth=0.8)
+plt.axvline(K, color='red', linestyle='-', label=f'Strike K={K:.2f}')
+plt.title('Payoff de Opciones CALL y PUT Europeas al Vencimiento (Ignorando Prima)')
+plt.xlabel('Precio de la Acción al Vencimiento (ST)')
+plt.ylabel('Payoff por Acción (Eur)')
+plt.grid(True)
+plt.legend()
+plt.show()
+```
