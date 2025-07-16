@@ -1,0 +1,32 @@
+name: Render Quarto to PDF
+
+on:
+  push:
+    paths:
+      - "*.qmd"
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: Instalar Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Instalar LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-xetex texlive-fonts-recommended texlive-plain-generic
+
+      - name: Render archivo .qmd a PDF
+        run: |
+          quarto render TRABAJO_FINANZAS_III_convertido.qmd --to pdf
+
+      - name: Guardar como artefacto descargable
+        uses: actions/upload-artifact@v3
+        with:
+          name: resultado-pdf
+          path: TRABAJO_FINANZAS_III_convertido.pdf
